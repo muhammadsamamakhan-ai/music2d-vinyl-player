@@ -503,9 +503,13 @@
     }
 
     // Physical Tonearm Drops onto Record
-    armWand.classList.add('playing');
+    if (armWand) {
+      armWand.classList.add('playing', 'arm-on-record');
+    }
     // Vinyl Disc Spins
-    vinylDisc.classList.add('spinning');
+    if (vinylDisc) {
+      vinylDisc.classList.add('spinning');
+    }
     // Update Play Button Icon to Pause Bars
     mainPlayIcon.innerHTML = `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -526,9 +530,13 @@
     }
 
     // Tonearm Lifts Off & Returns to Rest
-    armWand.classList.remove('playing');
+    if (armWand) {
+      armWand.classList.remove('playing', 'arm-on-record');
+    }
     // Vinyl Disc Halts
-    vinylDisc.classList.remove('spinning');
+    if (vinylDisc) {
+      vinylDisc.classList.remove('spinning');
+    }
     // Update Play Button Icon to Triangle
     mainPlayIcon.innerHTML = `
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -1219,6 +1227,12 @@
     mainPlayBtn.addEventListener('click', togglePlay);
     if (vinylDisc) {
       vinylDisc.addEventListener('click', togglePlay);
+    }
+    if (armWand) {
+      armWand.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlay();
+      });
     }
     nextBtn.addEventListener('click', playNextTrack);
     prevBtn.addEventListener('click', playPrevTrack);

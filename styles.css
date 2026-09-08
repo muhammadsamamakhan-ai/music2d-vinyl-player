@@ -553,10 +553,13 @@ body {
   transform-origin: top center;
   transform: rotate(0deg);
   transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
+.arm-wand-container.playing,
 .arm-wand-container.arm-on-record {
-  transform: rotate(26deg);
+  transform: rotate(28deg);
 }
 
 .arm-wand-pipe {
@@ -1520,6 +1523,11 @@ body.viewing-mp3juice .right-column {
     top: 6px;
     transform: scale(0.72);
     transform-origin: top right;
+  }
+
+  .arm-wand-container.playing,
+  .arm-wand-container.arm-on-record {
+    transform: rotate(32deg);
   }
 
   .deck-controls {
