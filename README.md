@@ -1,6 +1,6 @@
-# MUSIC2D - Vinyl Player Web Application
+# VinylPlayer - Retro Vinyl Player Web Application
 
-A pixel-accurate web adaptation of the **MUSIC2D Vinyl Player**, designed from the Light Mode and Dark Mode reference designs and optimized for immediate deployment to [Vercel](https://vercel.com).
+A pixel-accurate web adaptation of the **VinylPlayer**, designed from the Light Mode and Dark Mode reference designs and optimized for immediate deployment to [Vercel](https://vercel.com).
 
 ## 🌟 Features Included
 

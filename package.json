@@ -1,7 +1,7 @@
 {
   "name": "music2d-vinyl-player",
   "version": "1.0.0",
-  "description": "MUSIC2D - Retro Vinyl Player Web Experience",
+  "description": "VinylPlayer - Retro Vinyl Player Web Experience",
   "main": "index.html",
   "scripts": {
     "start": "npx serve ."

@@ -1426,15 +1426,16 @@ body.viewing-mp3juice .right-column {
   }
 
   .brand-logo {
-    font-size: 19px;
+    font-size: 15px;
+    letter-spacing: -0.5px;
     order: 1;
-    gap: 6px;
+    gap: 4px;
   }
 
   .nav-actions {
     order: 2;
     margin-left: auto;
-    gap: 6px;
+    gap: 5px;
   }
 
   .download-apk-btn {
