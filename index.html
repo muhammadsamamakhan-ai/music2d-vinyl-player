@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MUSIC2D - Retro Vinyl Player</title>
+  <meta name="description" content="MUSIC2D - High-Fidelity Retro Vinyl Player Web Experience & Music Station">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'><circle cx='12' cy='12' r='10'/><circle cx='12' cy='12' r='3' fill='white'/></svg>">
+</head>
+<body>
+
+  <!-- Hidden Native File Input for PC / Mobile Device Audio Import -->
+  <input type="file" id="device-audio-picker" accept="audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac" multiple style="display: none;">
+
+  <!-- Audio Element for Live Playback -->
+  <audio id="audio-engine" preload="auto"></audio>
+
+  <!-- Floating MP3Juice Download Status Toast -->
+  <div id="mp3juice-toast" class="mp3juice-toast">
+    <div class="toast-spinner"></div>
+    <div class="toast-text" id="toast-text-content">
+      📥 Song is downloading from MP3Juice... <span class="song-name" id="toast-song-name"></span>
+    </div>
+  </div>
+
+
+  <div class="app-container">
+    <!-- TOP NAVIGATION BAR (Matching Reference Mockups) -->
+    <header class="top-nav">
+      <a href="#" id="brand-logo-btn" class="brand-logo pixel-text" title="MUSIC2D">MUSIC2D</a>
+
+      <!-- Search Bar -->
+      <div class="search-wrapper">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search for songs, artists" spellcheck="false" autocomplete="off">
+        <!-- Live MP3Juice Search Results Dropdown -->
+        <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;">
+          <div class="search-dropdown-header">
+            <span id="search-dropdown-status" class="pixel-text">MP3JUICE RESULTS</span>
+            <button id="btn-close-dropdown" class="btn-close-dropdown" title="Close">✕</button>
+          </div>
+          <div id="search-dropdown-list" class="search-dropdown-list"></div>
+        </div>
+      </div>
+
+      <!-- Actions & Profile -->
+      <div class="nav-actions">
+        <!-- Download APK Link -->
+        <a href="vinylplayer.apk" download="vinylplayer.apk" class="download-apk-btn" title="Download Android APK">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0003 0-.551.4482-1.0003.9993-1.0003.5518 0 1.0007.4492 1.0007 1.0003 0 .5517-.4489 1.0003-1.0007 1.0003m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0003 0-.551.4482-1.0003.9993-1.0003.5518 0 1.0007.4492 1.0007 1.0003 0 .5517-.4489 1.0003-1.0007 1.0003m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.411 13.856 8.125 12 8.125c-1.856 0-3.5902.286-5.1368.8248L4.8409 5.4468a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.343 14.6589 0 18.761h24c-.343-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+          </svg>
+          <span>APK</span>
+        </a>
+
+
+
+        <!-- Theme Toggle (Light / Dark Mode Switcher) -->
+        <button id="theme-toggle-btn" class="icon-btn theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+          <!-- Sun Icon (shown in dark mode) -->
+          <svg id="sun-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+          <!-- Moon Icon (shown in light mode) -->
+          <svg id="moon-icon" style="display:none;" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+ 
+        <!-- Font Style Switcher (Pixel Retro / Modern Sans / Clean Mono) -->
+        <button id="font-toggle-btn" class="icon-btn font-toggle-btn" title="Change Font Style (Pixel Retro / Modern Sans / Clean Mono)" aria-label="Change Font Style">
+          <span id="font-badge-text" class="font-badge-text">Aa</span>
+        </button>
+
+
+      </div>
+    </header>
+
+    <!-- MAIN APP LAYOUT (Exact Split Layout from Reference Images) -->
+    <div class="main-layout">
+      <!-- LEFT VERTICAL DOCK (Functional 6-Tab Navigation) -->
+      <aside class="vertical-dock" aria-label="Quick Navigation">
+        <!-- 1: Home (Active) -->
+        <div class="dock-item active" data-tab="home" title="Home Dashboard">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+        <!-- 2: Heart (Favorites) -->
+        <div class="dock-item" data-tab="favorites" title="Liked Songs">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+          </svg>
+        </div>
+        <!-- 3: Cloud (MP3Juice Inline Portal) -->
+        <div class="dock-item" data-tab="mp3juice" id="dock-cloud-mp3juice" title="MP3Juice Portal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+            <path d="M12 12v9"></path>
+            <path d="m8 17 4 4 4-4"></path>
+          </svg>
+        </div>
+        <!-- 4: Music Note (All Songs, MP3Juice Downloads & Device Files) -->
+        <div class="dock-item" data-tab="songs" title="All Tracks & Device Files">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </div>
+
+      </aside>
+
+      <!-- CONTENT SPLIT: TURNTABLE vs MULTI-VIEW RIGHT COLUMN -->
+      <main class="content-split">
+        <!-- LEFT COLUMN: TURNTABLE & PLAYER (Matching media_1788847957577.jpg) -->
+        <section class="player-column">
+          <!-- Realistic Turntable Deck -->
+          <div id="turntable-deck" class="turntable-deck">
+            <!-- 4 Corner Hex Screws -->
+            <div class="screw screw-tl"></div>
+            <div class="screw screw-tr"></div>
+            <div class="screw screw-bl"></div>
+            <div class="screw screw-br"></div>
+
+            <!-- Drag & Drop Audio File Overlay -->
+            <div id="drop-zone-overlay" class="drop-zone-overlay">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span class="pixel-text">Drop Audio File on Turntable</span>
+            </div>
+
+            <!-- Platter Recess & Strobe Dots -->
+            <div class="platter-recess">
+              <div class="strobe-ring"></div>
+
+              <!-- The Vinyl Record -->
+              <div id="vinyl-disc" class="vinyl-disc" title="Click to Play / Pause">
+                <div class="vinyl-groove groove-1"></div>
+                <div class="vinyl-groove groove-2"></div>
+                <div class="vinyl-groove groove-3"></div>
+                <div class="vinyl-groove groove-4"></div>
+
+                <!-- Center Record Label -->
+                <div class="center-label">
+                  <span class="label-title">33⅓ RPM</span>
+                  <div class="spindle-pin"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pivoting Tonearm Assembly -->
+            <div class="tonearm-assembly">
+              <div class="gimbal-base">
+                <div class="counterweight"></div>
+              </div>
+
+              <!-- Pivoting Arm Wand with Needle Drop -->
+              <div id="arm-wand" class="arm-wand-container">
+                <div class="arm-wand-pipe"></div>
+                <div class="cartridge-headshell">
+                  <div class="headshell-vent"></div>
+                  <div class="headshell-vent"></div>
+                  <div class="headshell-vent"></div>
+                  <div class="stylus-needle"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hardware Switches on Deck -->
+            <div class="deck-controls">
+              <button id="speed-33" class="deck-btn active" title="33 1/3 RPM">33</button>
+              <button id="speed-45" class="deck-btn" title="45 RPM">45</button>
+              <div class="power-indicator" title="System Powered"></div>
+            </div>
+          </div>
+
+          <!-- Track Metadata Row -->
+          <div class="now-playing-meta">
+            <h1 id="track-title" class="track-title pixel-text">The Suffering</h1>
+            <!-- Like Count Badge -->
+            <div id="like-badge" class="like-badge" title="Like Track">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span id="likes-count">+ 392</span>
+            </div>
+          </div>
+
+          <!-- Genre Pill Badge -->
+          <div class="genre-pill-wrapper">
+            <span id="track-genre" class="genre-pill">Classic</span>
+          </div>
+
+          <!-- Waveform Progress Bar -->
+          <div class="waveform-container">
+            <span id="current-time" class="time-label">1:54</span>
+            <div id="waveform-bars" class="waveform-bars" title="Click to seek">
+              <!-- Dynamically populated waveform bars -->
+            </div>
+            <span id="duration-time" class="time-label">3:35</span>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="playback-controls">
+            <!-- Fullscreen / Expand Button -->
+            <button id="expand-btn" class="ctrl-btn" title="Browse Local Music (Phone/PC)" aria-label="Browse Device Music">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+
+            <!-- Previous Track -->
+            <button id="prev-btn" class="ctrl-btn" title="Previous Track" aria-label="Previous">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="3"></line>
+              </svg>
+            </button>
+
+            <!-- Main Play / Pause Circular Button -->
+            <button id="main-play-btn" class="main-play-btn" title="Play / Pause" aria-label="Play or Pause">
+              <span id="main-play-icon">
+                <!-- Play Triangle -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </span>
+            </button>
+
+            <!-- Next Track -->
+            <button id="next-btn" class="ctrl-btn" title="Next Track" aria-label="Next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="3"></line>
+              </svg>
+            </button>
+
+            <!-- Shuffle Mode -->
+            <button id="shuffle-btn" class="ctrl-btn" title="Shuffle" aria-label="Shuffle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 3 21 3 21 8"></polyline>
+                <line x1="4" y1="20" x2="21" y2="3"></line>
+                <polyline points="21 16 21 21 16 21"></polyline>
+                <line x1="15" y1="15" x2="21" y2="21"></line>
+                <line x1="4" y1="4" x2="9" y2="9"></line>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- RIGHT COLUMN: SWITCHABLE VIEWS -->
+        <section class="right-column">
+          
+          <!-- VIEW 1: HOME (Default View - Matching Mockup Exactly) -->
+          <div id="view-home" class="view-panel active">
+            <!-- Music Categories Header -->
+            <div class="section-header-row">
+              <h2 class="section-title pixel-text">Music<br>Categories</h2>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="category-pills-row">
+              <button class="category-pill active" data-category="all">Classic</button>
+              <button class="category-pill" data-category="90s">90s</button>
+              <button class="category-pill" data-category="new">New</button>
+              <button class="category-pill" data-category="instrumental">Instrumental</button>
+              <button class="category-pill" data-category="modern">Modern pop</button>
+            </div>
+
+            <!-- Category Cards Row (Real Hit Songs) -->
+            <div class="category-cards-grid">
+              <!-- Card 1: BIRDS OF A FEATHER by Billie Eilish -->
+              <div class="category-card" data-category="modern" data-track-id="birds_of_a_feather">
+                <div class="card-image-wrap">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/92/9f/69/929f69f1-9977-3a44-d674-11f70c852d1b/24UMGIM36186.rgb.jpg/600x600bb.jpg" alt="BIRDS OF A FEATHER Album Cover">
+                  <div class="card-play-overlay">
+                    <div class="overlay-circle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <h3 class="card-title">BIRDS OF A FEATHER</h3>
+                <p class="card-subtitle">by Billie Eilish</p>
+              </div>
+
+              <!-- Card 2: DIE WITH A SMILE by Lady Gaga & Bruno Mars -->
+              <div class="category-card" data-category="new" data-track-id="die_with_a_smile">
+                <div class="card-image-wrap">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/11/ae/f2/11aef294-f57c-bab9-c9fc-529162984e62/24UMGIM85348.rgb.jpg/600x600bb.jpg" alt="DIE WITH A SMILE Album Cover">
+                  <div class="card-play-overlay">
+                    <div class="overlay-circle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <h3 class="card-title">DIE WITH A SMILE</h3>
+                <p class="card-subtitle">by Lady Gaga & Bruno Mars</p>
+              </div>
+
+              <!-- Card 3: BLINDING LIGHTS by The Weeknd -->
+              <div class="category-card" data-category="modern" data-track-id="blinding_lights">
+                <div class="card-image-wrap">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/61/e7/3f/61e73f94-018d-5f50-50ec-8521952bc72e/20UM1IM11629.rgb.jpg/600x600bb.jpg" alt="BLINDING LIGHTS Album Cover">
+                  <div class="card-play-overlay">
+                    <div class="overlay-circle">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <h3 class="card-title">BLINDING LIGHTS</h3>
+                <p class="card-subtitle">by The Weeknd</p>
+              </div>
+            </div>
+
+            <!-- Favorite Playlists (4) Section -->
+            <div class="playlists-section">
+              <h2 class="section-title pixel-text">Favorite Playlists (4)</h2>
+
+              <div class="playlist-list">
+                <!-- Playlist Item 1: The Weeknd Essentials -->
+                <div class="playlist-item" data-playlist="weeknd">
+                  <div class="playlist-left">
+                    <div class="playlist-thumb">
+                      <img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b5/92/bb/b592bb72-52e3-e756-9b26-9f56d08f47ab/16UMGIM67864.rgb.jpg/600x600bb.jpg" alt="The Weeknd Essentials">
+                    </div>
+                    <div class="playlist-info">
+                      <h4 class="playlist-name">The Weeknd Essentials</h4>
+                      <p class="playlist-meta">32 songs in this list</p>
+                    </div>
+                  </div>
+                  <button class="playlist-play-btn" aria-label="Play The Weeknd Essentials">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Playlist Item 2: Classic Rock Anthems -->
+                <div class="playlist-item" data-playlist="classic_rock">
+                  <div class="playlist-left">
+                    <div class="playlist-thumb">
+                      <img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/4d/08/2a/4d082a9e-7898-1aa1-a02f-339810058d9e/14DMGIM05632.rgb.jpg/600x600bb.jpg" alt="Classic Rock Anthems">
+                    </div>
+                    <div class="playlist-info">
+                      <h4 class="playlist-name">Classic Rock Anthems</h4>
+                      <p class="playlist-meta">28 songs in this list</p>
+                    </div>
+                  </div>
+                  <button class="playlist-play-btn" aria-label="Play Classic Rock Anthems">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Playlist Item 3: 90s Alternative & Grunge -->
+                <div class="playlist-item" data-playlist="grunge_90s">
+                  <div class="playlist-left">
+                    <div class="playlist-thumb">
+                      <img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/95/fd/b9/95fdb9b2-6d2b-92a6-97f2-51c1a6d77f1a/00602527874609.rgb.jpg/600x600bb.jpg" alt="90s Alternative & Grunge">
+                    </div>
+                    <div class="playlist-info">
+                      <h4 class="playlist-name">90s Alternative & Grunge</h4>
+                      <p class="playlist-meta">30 songs in this list</p>
+                    </div>
+                  </div>
+                  <button class="playlist-play-btn" aria-label="Play 90s Alternative & Grunge">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Playlist Item 4: Analog Warmth & Chill -->
+                <div class="playlist-item" data-playlist="analog_chill">
+                  <div class="playlist-left">
+                    <div class="playlist-thumb">
+                      <img src="https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/d2/48/f4/d248f4ae-a7e4-a48e-1588-6617de3e8d76/mzi.izeorbmm.jpg/600x600bb.jpg" alt="Analog Warmth & Chill">
+                    </div>
+                    <div class="playlist-info">
+                      <h4 class="playlist-name">Analog Warmth & Chill</h4>
+                      <p class="playlist-meta">24 songs in this list</p>
+                    </div>
+                  </div>
+                  <button class="playlist-play-btn" aria-label="Play Analog Warmth & Chill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="6 4 18 12 6 20 6 4"></polygon>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 2: FAVORITES (Heart Icon - Matching media_1788852121929.png) -->
+          <div id="view-favorites" class="view-panel">
+            <div class="section-header-row">
+              <h2 class="section-title pixel-text" style="text-transform: uppercase; line-height: 1.15;">FAVORITE<br>TRACKS</h2>
+            </div>
+            <div id="favorites-list" class="fav-tracks-container fav-tracks-scrollable">
+              <!-- Populated dynamically matching media_1788852121929.png -->
+            </div>
+          </div>
+
+          <!-- VIEW 3: MP3JUICE (Cloud Icon #3) -->
+          <div id="view-mp3juice" class="view-panel">
+            <div class="mp3juice-frame-wrapper">
+              <iframe id="mp3juice-iframe" src="https://v7.mp3juice.za.com/" title="MP3Juice Music Downloader" allow="autoplay; clipboard-write; encrypted-media"></iframe>
+            </div>
+          </div>
+
+          <!-- VIEW 4: ALL SONGS, MP3JUICE DOWNLOADS & DEVICE MUSIC (Music Note Icon #4) -->
+          <div id="view-songs" class="view-panel">
+            <div class="songs-view-header">
+              <div>
+                <h2 class="section-title pixel-text" style="text-transform: uppercase; line-height: 1.15;">ALL<br>SONGS</h2>
+                <p class="songs-view-subtitle">Catalog, MP3Juice Downloads & Device Tracks</p>
+              </div>
+              <div class="songs-header-actions">
+                <button id="btn-browse-local" class="btn-device-browse" title="Select audio files from your Phone or PC">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <span>Browse from Device</span>
+                </button>
+                <button id="btn-goto-mp3juice" class="btn-mp3juice-badge" title="Go to MP3Juice Portal">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                    <path d="M12 12v9"></path>
+                    <path d="m8 17 4 4 4-4"></path>
+                  </svg>
+                  <span>MP3Juice Portal</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrollable Songs Container: Scrolls songs instead of the whole page -->
+            <div class="songs-scrollable-body">
+              <!-- Sub-Section 1: Downloaded from MP3Juice -->
+              <div id="mp3juice-downloads-section" class="songs-sub-section">
+                <div class="sub-section-title pixel-text">
+                  <span>📥 DOWNLOADED FROM MP3JUICE</span>
+                  <span id="mp3juice-downloads-count" class="badge-count">0</span>
+                </div>
+                <div id="mp3juice-downloads-list" class="fav-tracks-container" style="gap: 12px; margin-top: 10px;">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Sub-Section 2: All Songs Catalog -->
+              <div class="songs-sub-section" style="margin-top: 24px;">
+                <div class="sub-section-title pixel-text">
+                  <span>💿 ALL TRACKS CATALOG</span>
+                  <span id="all-tracks-count" class="badge-count">12</span>
+                </div>
+                <div id="all-songs-list" class="fav-tracks-container" style="gap: 14px; margin-top: 10px;">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
